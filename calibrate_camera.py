@@ -12,43 +12,50 @@ image_folder: folder containing chess board images for calibration
 :return mtx: transformation matrix
         dist: distortion coefficients
 """
-def calibrate(x, y, images_folder):
-    # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
-    objp = np.zeros((6*9,3), np.float32)
-    objp[:,:2] = np.mgrid[0:9, 0:6].T.reshape(-1,2)
+def calibrate(x, y, source_images):
+    objp = np.zeros((y * x, 3), np.float32)
+    objp[:, :2] = np.mgrid[0:x, 0:y].T.reshape(-1, 2)
 
     # Arrays to store object points and image points from all the images.
-    objpoints = [] # 3d points in real world space
-    imgpoints = [] # 2d points in image plane.
+    object_points = []  # 3d points in real world space
+    image_points = []  # 2d points in image plane.
 
-    # Make a list of calibration images
-    images = glob.glob('camera_cal/*.jpg')
-    for idx, fname in enumerate(images):
-        img = cv2.imread(fname)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # Make a list of calibration images paths
+    images_location = glob.glob(source_images)
+
+    for index, figure_name in enumerate(images_location):
+        image = cv2.imread(figure_name)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) # because read using cv2.imread
         # Find the chessboard corners
-        ret, corners = cv2.findChessboardCorners(gray, (9,6), None)
+        success, corners = cv2.findChessboardCorners(gray, (x, y), None)
         # If found, add object points, image points
-        if ret == True:
-            objpoints.append(objp)
-            imgpoints.append(corners)
-    img = cv2.imread(images[0])
-    img_size = (img.shape[1], img.shape[0])
+        if success:
+            object_points.append(objp)
+            image_points.append(corners)
+
+            # code for debugging
+            # cv2.drawChessboardCorners(image, (x, y), corners, ret)
+            # write_name = 'output_images/drawn_corners/corners_found' + str(index) + '.jpg'
+            # cv2.imwrite(write_name, image)
+
+    # choose random image to un-distort
+    image = cv2.imread(images_location[0])
+    image_size = (image.shape[1], image.shape[0])
 
     # Do camera calibration given object points and image points
-    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size,None,None)
-    return (mtx, dist)
+    success, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(object_points, image_points, image_size, None, None)
+
+    return mtx, dist
 
 """
 un-distorts the given image and stores it in the given folder
 image: source image
 mtx: number of objects points in the y direction
 dist: distortion coefficients
-id: index to be given to the image as its name
-out_folder: dump folder for output
+destination: image name.jpg and destination
 :return void
 """
-def undistort(image, mtx, dist, out_folder, id):
+def undistort(image, mtx, dist, destination):
     dst = cv2.undistort(image, mtx, dist, None, mtx)
-    cv2.imwrite(out_folder + str(id) + '.jpg', dst)
+    cv2.imwrite(destination, dst)
 
