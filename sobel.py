@@ -1,6 +1,13 @@
 import numpy as np
 import cv2
 
+"""
+applies Sobel x or y, then computes the absolute value of the gradient and applies a threshold.
+parameters:
+  img: source image
+  sobel_kernel: symmetric kernel size
+  thresh: range of desired values
+"""
 def abs_sobel_thresh(img, orient='x', sobel_kernel=3, thresh=(0, 255)):
     # Calculate directional gradient
     # Apply threshold
@@ -19,9 +26,13 @@ def abs_sobel_thresh(img, orient='x', sobel_kernel=3, thresh=(0, 255)):
     return grad_binary
 
 
-# Define a function that applies Sobel x and y, 
-# then computes the magnitude of the gradient
-# and applies a threshold
+"""
+applies Sobel x and y, then computes the magnitude of the gradient and applies a threshold.
+parameters:
+  img: source image
+  sobel_kernel: symmetric kernel size
+  thresh: range of desired values
+"""
 def mag_thresh(img, sobel_kernel=3, mag_thresh=(0, 255)):
     
     # Apply the following steps to img
@@ -45,9 +56,14 @@ def mag_thresh(img, sobel_kernel=3, mag_thresh=(0, 255)):
     return binary_output
 
 
-# Define a function that applies Sobel x and y, 
-# then computes the direction of the gradient
-# and applies a threshold.
+"""
+applies Sobel x and y, then computes the direction of the gradient
+and applies a threshold.
+parameters:
+  img: source image
+  sobel_kernel: symmetric kernel size
+  thresh: range of desired values
+"""
 def dir_threshold(img, sobel_kernel=3, thresh=(0, np.pi/2)):
     
     # Apply the following steps to img
