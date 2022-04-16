@@ -10,5 +10,5 @@ def get_bird_view(image):
     matrix = cv2.getPerspectiveTransform(src_points, dst_points)
     matrix_inv = cv2.getPerspectiveTransform(dst_points, src_points)
     out = cv2.warpPerspective(image, matrix, (width, height))
-    return out
+    return out, matrix, matrix_inv
     
