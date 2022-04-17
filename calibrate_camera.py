@@ -53,9 +53,9 @@ image: source image
 mtx: number of objects points in the y direction
 dist: distortion coefficients
 destination: image name.jpg and destination
-:return void
+:return undistorted_image
 """
-def undistort(image, mtx, dist, destination):
-    dst = cv2.undistort(image, mtx, dist, None, mtx)
-    cv2.imwrite(destination, dst)
+def undistort(image, mtx, dist):
+    undistorted_image = cv2.undistort(image, mtx, dist, None, mtx)
+    return undistorted_image
 
