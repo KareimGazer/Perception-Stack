@@ -84,7 +84,7 @@ def find_lane_pixels(binary_warped, nwindows=9, margin=100, minpix = 50):
 
 def fit_polynomial(binary_warped, nwindows=9, margin=100, minpix = 50):
     # Find our lane pixels first
-    binary_warped = cv2.cvtColor(binary_warped, cv2.COLOR_RGB2GRAY)
+    # binary_warped = cv2.cvtColor(binary_warped, cv2.COLOR_RGB2GRAY)
     leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped, nwindows, margin, minpix)
 
     # Fit a second order polynomial to each using `np.polyfit`
@@ -110,7 +110,7 @@ def fit_polynomial(binary_warped, nwindows=9, margin=100, minpix = 50):
     return out_img, left_fitx, right_fitx, ploty
 
 def draw_path(binary_warped, left_fitx, right_fitx, ploty, matrix_inv, undist):
-    binary_warped = cv2.cvtColor(binary_warped, cv2.COLOR_RGB2GRAY)
+    # binary_warped = cv2.cvtColor(binary_warped, cv2.COLOR_RGB2GRAY)
     
     # Create an image to draw the lines on
     warp_zero = np.zeros_like(binary_warped).astype(np.uint8)
