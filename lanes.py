@@ -35,6 +35,9 @@ def find_lane_pixels(binary_warped, nwindows=9, margin=100, minpix = 50):
     left_lane_inds = []
     right_lane_inds = []
 
+    minpix_left = minpix
+    minpix_right = minpix
+
     # Step through the windows one by one
     for window in range(nwindows):
         # Identify window boundaries in x and y (and right and left)
@@ -60,10 +63,12 @@ def find_lane_pixels(binary_warped, nwindows=9, margin=100, minpix = 50):
         right_lane_inds.append(good_right_inds)
         
         # If you found > minpix pixels, recenter next window on their mean position
-        if len(good_left_inds) > minpix:
+        if len(good_left_inds) > minpix_left:
             leftx_current = np.int(np.mean(nonzerox[good_left_inds]))
-        if len(good_right_inds) > minpix:        
+            minpix_left = len(good_left_inds)
+        if len(good_right_inds) > minpix_right:        
             rightx_current = np.int(np.mean(nonzerox[good_right_inds]))
+            minpix_right = len(good_right_inds)
 
     # Concatenate the arrays of indices (previously was a list of lists of pixels)
     try:

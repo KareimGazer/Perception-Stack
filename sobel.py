@@ -11,7 +11,8 @@ parameters:
 def abs_sobel_thresh(img, orient='x', sobel_kernel=3, thresh=(0, 255)):
     # Calculate directional gradient
     # Apply threshold
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    # gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    gray = img
     if orient == 'y':
         sobel = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=sobel_kernel)
     else:
@@ -43,7 +44,8 @@ def mag_thresh(img, sobel_kernel=3, mag_thresh=(0, 255)):
     # 5) Create a binary mask where mag thresholds are met
     # 6) Return this mask as your binary_output image
     
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    # gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    gray = img
     sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=sobel_kernel)
     sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=sobel_kernel)
     mag = np.sqrt(np.power(sobelx, 2) + np.power(sobely, 2))
@@ -74,7 +76,8 @@ def dir_threshold(img, sobel_kernel=3, thresh=(0, np.pi/2)):
     # 5) Create a binary mask where direction thresholds are met
     # 6) Return this mask as your binary_output image
     
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    # gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    gray = img
     sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=sobel_kernel)
     sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=sobel_kernel)
     abs_sobelx = np.absolute(sobelx)
@@ -90,21 +93,51 @@ def dir_threshold(img, sobel_kernel=3, thresh=(0, np.pi/2)):
 """
 combines both sobel gradients on RGB images and color threshold on s channel in HLS image
 """
-def get_binary(image, ksize):
-    gradx = abs_sobel_thresh(image, orient='x', sobel_kernel=ksize, thresh=(20, 100))
-    grady = abs_sobel_thresh(image, orient='y', sobel_kernel=ksize, thresh=(20, 100))
-    mag_binary = mag_thresh(image, sobel_kernel=ksize, mag_thresh=(30, 100))
-    dir_binary = dir_threshold(image, sobel_kernel=ksize, thresh=(0.7, 1)) # 0.7, 1.3 (old values)
-    combined_soble = np.zeros_like(dir_binary)
-    combined_soble[((gradx == 1) & (grady == 1)) | ((mag_binary == 1) & (dir_binary == 1))] = 1
+def get_binary(frame, ksize):
+    LAB = cv2.cvtColor(frame, cv2.COLOR_RGB2LAB)
+    b_channel = LAB[:,:,2]
+    b_channel = 255 - b_channel
+    b_thresh_min = 138
+    b_thresh_max = 255
+    b_binary = np.zeros_like(b_channel)
+    b_binary[(b_channel >= b_thresh_min) & (b_channel <= b_thresh_max)] = 1
     
-    hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
+    hls = cv2.cvtColor(frame, cv2.COLOR_RGB2HLS)
     s_channel = hls[:,:,2]
-    s_thresh_min = 150
-    s_thresh_max = 255
+    s_thresh_min = 50
+    s_thresh_max = 150
     s_binary = np.zeros_like(s_channel)
     s_binary[(s_channel >= s_thresh_min) & (s_channel <= s_thresh_max)] = 1
     
-    combined_binary = np.zeros_like(combined_soble)
-    combined_binary[(s_binary == 1) | (combined_soble == 1)] = 1
+    left_binary = np.zeros_like(s_channel)
+    left_binary[(s_binary==1) & ((b_binary==1))] = 1
+    # left_binary[((b_binary==1))] = 1
+    
+    #combined_soble = pipline(frame, mtx, dist)
+    # print(combined_soble.shape)
+    
+    l_channel = hls[:,:,1] # detects right lane
+    l_thresh_min = 200
+    l_thresh_max = 255
+    l_binary = np.zeros_like(l_channel)
+    l_binary[(l_channel >= l_thresh_min) & (l_channel <= l_thresh_max)] = 1
+    l_binary = np.zeros_like(l_channel)
+    l_binary[(l_channel >= l_thresh_min) & (l_channel <= l_thresh_max)] = 1
+    
+    image_gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+    gradx = abs_sobel_thresh(image_gray, orient='x', sobel_kernel=ksize, thresh=(0, 255))
+    grady = abs_sobel_thresh(image_gray, orient='y', sobel_kernel=ksize, thresh=(100, 255))
+    mag_binary = mag_thresh(image_gray, sobel_kernel=ksize, mag_thresh=(20, 100)) #may increase upper bound
+    dir_binary = dir_threshold(image_gray, sobel_kernel=ksize, thresh=(0.7, 1.4))
+    combined = np.zeros_like(dir_binary)
+    combined[((gradx == 1) & (grady == 1)) | ((mag_binary == 1) & (dir_binary == 1))] = 1
+    # combined[(gradx == 1) & (grady == 1)] = 1
+    
+    right_binary = np.zeros_like(dir_binary)
+    # right_binary[(combined == 1) & (l_binary == 1)] = 1
+    right_binary[(l_binary == 1)] = 1
+    
+    combined_binary = np.zeros_like(right_binary)
+    combined_binary[(left_binary==1) | ((right_binary==1))] = 1
+    
     return combined_binary
