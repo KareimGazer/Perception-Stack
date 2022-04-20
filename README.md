@@ -27,7 +27,8 @@ The goals / steps of this project are the following:
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
 ## folder Structure
-Malware-Detector-Repeat
+```
+Perception
 ├── camera_cal/         chessboard images used to calibrate the camera
 ├── examples/            examples of the expected output from the starter files
 ├── output_images/       output images of the different stages of the pipeline
@@ -44,3 +45,4 @@ Malware-Detector-Repeat
 ├── SysMonitor.py       used to identify and stop the program.
 ├── sobel.py            detects the lane lines.
 └── video.py            generates production and debugging videos
+```
