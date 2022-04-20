@@ -2,7 +2,7 @@
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 ![Lanes Image](./examples/example_output.jpg)
 
-In this project, your goal is to write a software pipeline to identify the lane boundaries in a video, but the main output or product we want you to create is a detailed writeup of the project.  Check out the [writeup template](https://github.com/udacity/CarND-Advanced-Lane-Lines/blob/master/writeup_template.md) for this project and use it as a starting point for creating your own writeup.  
+In this project, I detect the lane lines using ...
 
 Creating a great writeup:
 ---
@@ -12,7 +12,7 @@ All that said, please be concise!  We're not looking for you to write a book her
 
 You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup.
 
-The Project
+The Project Steps
 ---
 
 The goals / steps of this project are the following:
@@ -26,14 +26,21 @@ The goals / steps of this project are the following:
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
-The images for camera calibration are stored in the folder called `camera_cal`.  The images in `test_images` are for testing your pipeline on single frames.  If you want to extract more test images from the videos, you can simply use an image writing method like `cv2.imwrite()`, i.e., you can read the video in frame by frame as usual, and for frames you want to save for later you can write to an image file.  
-
-To help the reviewer examine your work, please save examples of the output from each stage of your pipeline in the folder called `output_images`, and include a description in your writeup for the project of what each image shows.    The video called `project_video.mp4` is the video your pipeline should work well on.  
-
-The `challenge_video.mp4` video is an extra (and optional) challenge for you if you want to test your pipeline under somewhat trickier conditions.  The `harder_challenge.mp4` video is another optional challenge and is brutal!
-
-If you're feeling ambitious (again, totally optional though), don't stop there!  We encourage you to go out and take video of your own, calibrate your camera and show us how you would implement this project from scratch!
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-
+## folder Structure
+Malware-Detector-Repeat
+├── camera_cal/         chessboard images used to calibrate the camera
+├── examples/            examples of the expected output from the starter files
+├── output_images/       output images of the different stages of the pipeline
+├── test_images/         road images used for testing
+├── bird_view.py        contains fucntion to generate the bird prespective view
+├── calibrate_camera/   functions to calibrate the camera
+├── lanes/              function for detecting, fitting, and plotting the lanes
+├── main.html/          the writeup 
+├── main.ipynb/         the main project notebook
+├── rad.py              function for calulating offset from center and radius of curvature
+├── run.sh              bash script to run the project
+├── repo_link.txt       the repo link 
+├── README.md           main documentation.
+├── SysMonitor.py       used to identify and stop the program.
+├── sobel.py            detects the lane lines.
+└── video.py            generates production and debugging videos
