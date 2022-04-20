@@ -2,15 +2,29 @@
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 ![Lanes Image](./examples/example_output.jpg)
 
-In this project, I detect the lane lines using ...
 
-Creating a great writeup:
+## Installation
+
+### Dependencies
+```
+pip3 install numpy
+```
+```
+pip3 install matplotlib
+```
+```
+pip3 install glob2
+```
+```
+pip3 install opencv-python
+```
 ---
-A great writeup should include the rubric points as well as your description of how you addressed each point.  You should include a detailed description of the code used in each step (with line-number references and code snippets where necessary), and links to other supporting documents or external references.  You should include images in your writeup to demonstrate how your code works with examples.  
+### Get Started
+- download the repo
+- to generatge the production video `./run.sh <input_file_path> <output_file_path> --production`
+- to generate the debugging video `./run.sh <input_file_path> <output_file_path> --debugging`
 
-All that said, please be concise!  We're not looking for you to write a book here, just a brief description of how you passed each rubric point, and references to the relevant code :). 
 
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup.
 
 The Project Steps
 ---
@@ -28,7 +42,7 @@ The goals / steps of this project are the following:
 
 ## folder Structure
 ```
-Perception
+Perception-Stack
 ├── camera_cal/         chessboard images used to calibrate the camera
 ├── examples/            examples of the expected output from the starter files
 ├── output_images/       output images of the different stages of the pipeline
