@@ -14614,6 +14614,18 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p><a href="https://github.com/KareimGazer/Perception-Stack">https://github.com/KareimGazer/Perception-Stack</a></p>
+
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h1 id="Abstract">Abstract<a class="anchor-link" href="#Abstract">&#182;</a></h1><p>In this first part of the project we aim to detect and draw the lane line. the frames of the video pass through a pipleline to get processed and achieve the required results. In the following sections we demonstrate those steps.</p>
 
 </div>
@@ -15046,7 +15058,9 @@ jp-needs-light-background
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="Apply-a-perspective-transform-to-rectify-binary-image-(%22birds-eye-view%22).">Apply a perspective transform to rectify binary image ("birds-eye view").<a class="anchor-link" href="#Apply-a-perspective-transform-to-rectify-binary-image-(%22birds-eye-view%22).">&#182;</a></h2>
+<h2 id="Apply-a-perspective-transform-to-rectify-binary-image-(%22birds-eye-view%22).">Apply a perspective transform to rectify binary image ("birds-eye view").<a class="anchor-link" href="#Apply-a-perspective-transform-to-rectify-binary-image-(%22birds-eye-view%22).">&#182;</a></h2><p>the code is in <code>bird_view.py</code> file and I used these points [[530, 490], [750, 490], [210, 690], [1080, 690]]
+it only contains one function responsible for the transformation</p>
+
 </div>
 </div>
 </div>
@@ -15238,7 +15252,7 @@ jp-needs-light-background
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[14]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -15263,6 +15277,9 @@ jp-needs-light-background
     <span class="n">undist</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">undists</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">lanes</span><span class="o">.</span><span class="n">draw_path</span><span class="p">(</span><span class="n">binary_warped</span><span class="p">,</span> <span class="n">left_fitx</span><span class="p">,</span> <span class="n">right_fitx</span><span class="p">,</span> <span class="n">ploty</span><span class="p">,</span> <span class="n">matrix_inv</span><span class="p">,</span> <span class="n">undist</span><span class="p">)</span>
     
+    <span class="n">left_curverad</span><span class="p">,</span> <span class="n">right_curverad</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">rad</span><span class="o">.</span><span class="n">measure_curvature_real</span><span class="p">(</span><span class="n">binary_warped</span><span class="p">,</span> <span class="n">left_fitx</span><span class="p">,</span> <span class="n">right_fitx</span><span class="p">,</span> <span class="n">ploty</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: curvature (</span><span class="si">{}</span><span class="s2"> m, </span><span class="si">{}</span><span class="s2"> m), offset = </span><span class="si">{}</span><span class="s2"> m&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">left_curverad</span><span class="p">,</span> <span class="n">right_curverad</span><span class="p">,</span> <span class="n">offset</span><span class="p">))</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="s1">&#39;output_images/roads_maped/</span><span class="si">{}</span><span class="s1">.jpg&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">index</span><span class="p">),</span> <span class="n">result</span><span class="p">)</span>
 <span class="n">plt_road</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s1">&#39;output_images/roads_maped/0.jpg&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">plt_road</span><span class="p">)</span>
@@ -15283,13 +15300,32 @@ jp-needs-light-background
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>0: curvature (4992.110497264597 m, 1402.5505986895582 m), offset = 1.247316592227185 m
+1: curvature (1207.290762432144 m, 20604.386561402112 m), offset = 0.644747775328345 m
+2: curvature (5119.73637561083 m, 2106.811206867809 m), offset = 0.840796626320527 m
+3: curvature (11739.174327361905 m, 387.75122965754883 m), offset = 1.2230642505317817 m
+4: curvature (18490.420701114985 m, 4293.733218932328 m), offset = 0.5641647775988109 m
+5: curvature (2267.911546118961 m, 589.5255952629888 m), offset = 1.878775035067912 m
+6: curvature (915.8876429651847 m, 699.5669137278326 m), offset = 1.2899092551711624 m
+7: curvature (4709.1139027857935 m, 651.5424815791159 m), offset = 1.2777049759693067 m
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[14]:</div>
 
 
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>&lt;matplotlib.image.AxesImage at 0x27eca8c7070&gt;</pre>
+<pre>&lt;matplotlib.image.AxesImage at 0x27ecb32bd90&gt;</pre>
 </div>
 
 </div>
@@ -15501,6 +15537,18 @@ jp-needs-light-background
 </div>
 </div>
 
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Discussion">Discussion<a class="anchor-link" href="#Discussion">&#182;</a></h1><p>The pipeline could benefit from mergeing multiple detection techniques like anding the color channels with the gradients obtained from sobel for example to get robust lines. also the use of adaptive thresholding, and contrast equilization could improve the performance, though I didn't much difference from applying them.</p>
+
+</div>
+</div>
+</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
