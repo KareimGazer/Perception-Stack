@@ -5,6 +5,7 @@ import bird_view
 import lanes
 import rad
 import sobel
+import sys
 
 ksize = 3
 mtx, dist = calibrate_camera.calibrate(9, 6, 'camera_cal/*.jpg')
@@ -82,14 +83,17 @@ def get_debug_images(frame, mtx, dist):
     numpy_ver = np.vstack((numpy_horz1, numpy_horz2))
     return numpy_ver
 
-mode = "--productio"
-cap = cv2.VideoCapture('challenge_video.mp4')
+
+
+mode = sys.argv[3]
+source = sys.argv[1]
+destination = sys.argv[2]
+cap = cv2.VideoCapture(source)
 # cap = cv2.VideoCapture('project_video.mp4')
 
-video_file = 'output.mp4'
 frame_size = (1280, 720)
 fps = 40
-out = cv2.VideoWriter(video_file, cv2.VideoWriter_fourcc(*'MP4V'), fps, frame_size)
+out = cv2.VideoWriter(destination, cv2.VideoWriter_fourcc(*'MP4V'), fps, frame_size)
 
 index = 0
 # Loop until the end of the video
@@ -105,18 +109,19 @@ while (cap.isOpened()):
         if(mode == "--production"):
             result = pipeline(frame, mtx, dist)
             out.write(result)
-            cv2.imshow('Frame', result)
-        else:
+            # cv2.imshow('Frame', result)
+        elif(mode == "--debugging"):
             result = get_debug_images(frame, mtx, dist)
             
             # cv2.imshow('Frame', result)
             
             cv2.imwrite('output_images/dump/{}.jpg'.format(index), result)
             new_result = cv2.imread('output_images/dump/{}.jpg'.format(index))
-            cv2.imshow('Frame', new_result)
+            #cv2.imshow('Frame', new_result)
             out.write(new_result)
             index +=1
-
+        else:
+            break
 
         # define q as the exit button
         if cv2.waitKey(1) & 0xFF == ord('q'):
