@@ -1,0 +1,5 @@
+output_images
+__pycache__
+.ipynb_checkpoints
+*.mp4
+model_data
