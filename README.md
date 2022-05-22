@@ -18,6 +18,9 @@ pip3 install glob2
 ```
 pip3 install opencv-python
 ```
+```
+pip3 install moviepy
+```
 ---
 ### Get Started
 - download the repo
