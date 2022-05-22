@@ -7,7 +7,17 @@ import rad
 import sobel
 import sys
 from moviepy.editor import VideoFileClip
-
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+import numpy as np
+import cv2
+from sklearn.svm import LinearSVC
+from sklearn.preprocessing import StandardScaler
+from skimage.feature import hog
+from sklearn.model_selection import train_test_split
+from lesson_functions import *
+from functools import reduce
+import pickle
 
 ksize = 3
 mtx, dist = calibrate_camera.calibrate(9, 6, 'camera_cal/*.jpg')
@@ -143,6 +153,45 @@ def full_perception(frame):
     return cars_detected
 
 
+file_name = "svc_pickle.p"
+# load a pe-trained svc model from a serialized (pickle) file
+dist_pickle = pickle.load(open(file_name, "rb" ))
+
+# get attributes of our svc object
+svc = dist_pickle["svc"]
+X_scaler = dist_pickle["scaler"]
+orient = dist_pickle["orient"]
+pix_per_cell = dist_pickle["pix_per_cell"]
+cell_per_block = dist_pickle["cell_per_block"]
+
+heat_history = []
+ystart = 400 # 330 650
+ystop = 656
+scale = 1.5 # 
+move_pix = 1 #  4 cells_per_step in the lesson
+frames_to_remember = 2
+
+def detect_cars_hog(image):
+    threshold = 5
+    global heat_history, move_pix, ystart, ystop, scale, svc 
+    global frames_to_remember, X_scaler, orient, pix_per_cell, cell_per_block
+    out_img, box_list = find_cars(image, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, cell_per_block, move_pix)
+    
+    heat = np.zeros_like(image[:,:,0]).astype(float)
+    heat = add_heat(heat, box_list)
+    if len(heat_history) >= frames_to_remember:
+            heat_history = heat_history[1:]
+    heat_history.append(heat)
+    
+    heat = reduce(lambda h, acc: h + acc, heat_history)
+    heat = apply_threshold(heat, threshold)
+    heatmap = np.clip(heat, 0, 255)
+    labels = label(heatmap)
+    draw_img = draw_labeled_bboxes(np.copy(image), labels)
+    
+    return draw_img
+
+
 project_video_path = sys.argv[1]
 project_video_output = sys.argv[2]
 mode = sys.argv[3]
@@ -155,6 +204,9 @@ print("Mode: ", mode, "  type: ", kind)
 
 if(mode == "--production" and kind == "--yolo"):
     out_clip = project_video.fl_image(detect_cars_yolo) 
+    out_clip.write_videofile(project_video_output, audio=False)
+elif(mode == "--production" and kind == "--hog"):
+    out_clip = project_video.fl_image(detect_cars_hog) 
     out_clip.write_videofile(project_video_output, audio=False)
 elif(mode == "--production" and kind == "--lanes"):
     out_clip = project_video.fl_image(detect_lanes) 
