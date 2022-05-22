@@ -124,16 +124,16 @@ def get_binary(frame, ksize):
     l_binary = np.zeros_like(l_channel)
     l_binary[(l_channel >= l_thresh_min) & (l_channel <= l_thresh_max)] = 1
     
-    image_gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-    gradx = abs_sobel_thresh(image_gray, orient='x', sobel_kernel=ksize, thresh=(0, 255))
-    grady = abs_sobel_thresh(image_gray, orient='y', sobel_kernel=ksize, thresh=(100, 255))
-    mag_binary = mag_thresh(image_gray, sobel_kernel=ksize, mag_thresh=(20, 100)) #may increase upper bound
-    dir_binary = dir_threshold(image_gray, sobel_kernel=ksize, thresh=(0.7, 1.4))
-    combined = np.zeros_like(dir_binary)
-    combined[((gradx == 1) & (grady == 1)) | ((mag_binary == 1) & (dir_binary == 1))] = 1
+    # image_gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+    # gradx = abs_sobel_thresh(image_gray, orient='x', sobel_kernel=ksize, thresh=(0, 255))
+    # grady = abs_sobel_thresh(image_gray, orient='y', sobel_kernel=ksize, thresh=(100, 255))
+    # mag_binary = mag_thresh(image_gray, sobel_kernel=ksize, mag_thresh=(20, 100)) #may increase upper bound
+    # dir_binary = dir_threshold(image_gray, sobel_kernel=ksize, thresh=(0.7, 1.4))
+    # combined = np.zeros_like(dir_binary)
+    # combined[((gradx == 1) & (grady == 1)) | ((mag_binary == 1) & (dir_binary == 1))] = 1
     # combined[(gradx == 1) & (grady == 1)] = 1
     
-    right_binary = np.zeros_like(dir_binary)
+    right_binary = np.zeros_like(l_channel)
     # right_binary[(combined == 1) & (l_binary == 1)] = 1
     right_binary[(l_binary == 1)] = 1
     
