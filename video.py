@@ -6,26 +6,31 @@ import lanes
 import rad
 import sobel
 import sys
+from moviepy.editor import VideoFileClip
+
 
 ksize = 3
 mtx, dist = calibrate_camera.calibrate(9, 6, 'camera_cal/*.jpg')
 prev_out_img, prev_left_fitx, prev_right_fitx, prev_ploty = (None, None, None, None)
 
-def pipeline(frame, mtx, dist):
-    global prev_out_img, prev_left_fitx, prev_right_fitx, prev_ploty
+weights_path = 'model_data/yolov3.weights'
+confg_path = 'model_data/yolov3.cfg'
+labels_path = 'model_data/coco.names'
+labels = open(labels_path).read().strip().split('\n')
+net = cv2.dnn.readNetFromDarknet(confg_path, weights_path)
+out_layer_name = net.getUnconnectedOutLayersNames()
 
-    # phase 1
+
+def detect_lanes(frame):
+    global prev_out_img, prev_left_fitx, prev_right_fitx, prev_ploty, mtx, dist, ksize
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     undistored_image = calibrate_camera.undistort(frame, mtx, dist)
     # image_rgb = cv2.cvtColor(undistored_image, cv2.COLOR_BGR2RGB)
-
-    # phase 2
     combined_soble = sobel.get_binary(undistored_image, ksize)
     # return combined_soble
 
-    # phase 3
     binary_warped, matrix, matrix_inv = bird_view.get_bird_view(combined_soble)
     
-    #phase 4
     out_img, left_fitx, right_fitx, ploty = (None, None, None, None)
     try:
         out_img, left_fitx, right_fitx, ploty = lanes.fit_polynomial(binary_warped, 10, 90, 50)
@@ -33,8 +38,8 @@ def pipeline(frame, mtx, dist):
     except:
         out_img, left_fitx, right_fitx, ploty = prev_out_img, prev_left_fitx, prev_right_fitx, prev_ploty
     
-    # phase 5
     result = lanes.draw_path(binary_warped, left_fitx, right_fitx, ploty, matrix_inv, frame)
+    
     # calculating curvature and center offset
     left_curverad, right_curverad, real_offset = rad.measure_curvature_real(binary_warped, left_fitx, right_fitx, ploty)
     curve_info = "radius of curvature ({} Km, {} Km)".format(str(round(left_curverad/1000, 2)), 
@@ -44,8 +49,12 @@ def pipeline(frame, mtx, dist):
     
     detailed = cv2.putText(result, curve_info, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0 , 0), 2, cv2.LINE_AA)
     detailed = cv2.putText(detailed, center_info, (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0 , 0), 2, cv2.LINE_AA)
-    return result
+    return cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
 
+
+"""
+returns group of images each represents a step in the pipeline
+"""
 def debug_pipeline(frame, mtx, dist):
     global prev_out_img, prev_left_fitx, prev_right_fitx, prev_ploty
     undistored_image = calibrate_camera.undistort(frame, mtx, dist)
@@ -70,69 +79,91 @@ def debug_pipeline(frame, mtx, dist):
     binary_warped = np.dstack((binary_warped, binary_warped, binary_warped))
     return undistored_image, combined_soble, binary_warped, out_img, detailed
 
-def get_debug_images(frame, mtx, dist):
+
+"""
+resizes the debug pipeline images so it can fit into a single frame
+"""
+def get_debug_image(frame):
+    global mtx, dist
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     undistored_image, combined_soble, binary_warped, out_img, detailed = debug_pipeline(frame, mtx, dist)
+    
+    undistored_image = cv2.cvtColor(undistored_image, cv2.COLOR_BGR2RGB)
+    detailed = cv2.cvtColor(detailed, cv2.COLOR_BGR2RGB)
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    
     combined_soble = cv2.resize(combined_soble, (0, 0), None, .5, .5)
     undistored_image = cv2.resize(undistored_image, (0, 0), None, .5, .5)
     binary_warped = cv2.resize(binary_warped, (0, 0), None, .25, .5)
     out_img = cv2.resize(out_img, (0, 0), None, .25, .5)
     detailed = cv2.resize(detailed, (0, 0), None, .25, .5)
     frame =  cv2.resize(frame, (0, 0), None, .25, .5)
+    
     numpy_horz1 = np.hstack((undistored_image, combined_soble*255)) # x * 2
     numpy_horz2 = np.hstack((frame, binary_warped*255, out_img, detailed))
     numpy_ver = np.vstack((numpy_horz1, numpy_horz2))
     return numpy_ver
 
 
+def detect_cars_yolo(frame):
+    blob = cv2.dnn.blobFromImage(frame, 1/255.0, (256, 256), crop=False, swapRB=False) # check RB, 1/255.0
+    net.setInput(blob)
+    net_out = net.forward(out_layer_name)
+    frame_height, frame_width = frame.shape[:2]
+    boxes = []
+    confidences = []
+    classIDs = []
+    for output in net_out:
+        for detection in output:
+            scores = detection[5:]
+            classID = np.argmax(scores)
+            confidence = scores[classID]
+            if(confidence > 0.9):
+                box = detection[:4] * np.array([frame_width, frame_height, frame_width, frame_height])
+                bx, by, bw, bh = box.astype('int')
+                x, y = int(bx - (bw/2)), int(by - bh/2)
+                boxes.append([x, y, int(bw), int(bh)])
+                confidences.append(float(confidence))
+                classIDs.append(classID)
+    
+    idxs = cv2.dnn.NMSBoxes(boxes, confidences, 0.8, 0.8)
+    if not len(idxs):
+        return frame
+    for i in idxs.flatten():
+        x, y = [boxes[i][0], boxes[i][1]]
+        w, h = [boxes[i][2], boxes[i][3]]
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 255),2)
+        cv2.putText(frame, '{}:{:.2f}'.format(labels[classIDs[i]], confidences[i]), (x, y-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 139,  139), 2)
+    return frame
 
+
+def full_perception(frame):
+    lanes_detected = detect_lanes(frame)
+    cars_detected = detect_cars_yolo(lanes_detected)
+    return cars_detected
+
+
+project_video_path = sys.argv[1]
+project_video_output = sys.argv[2]
 mode = sys.argv[3]
-source = sys.argv[1]
-destination = sys.argv[2]
-cap = cv2.VideoCapture(source)
-# cap = cv2.VideoCapture('project_video.mp4')
+kind = "--general"
+if (len(sys.argv) > 4):
+    kind = sys.argv[4]
 
-frame_size = (1280, 720)
-fps = 40
-out = cv2.VideoWriter(destination, cv2.VideoWriter_fourcc(*'MP4V'), fps, frame_size)
+project_video = VideoFileClip(project_video_path)
+print("Mode: ", mode, "  type: ", kind)
 
-index = 0
-# Loop until the end of the video
-while (cap.isOpened()):
-    # Capture frame-by-frame
-    ret, frame = cap.read()
-    if ret:
-        frame = cv2.resize(frame, frame_size, fx = 0, fy = 0,
-                         interpolation = cv2.INTER_CUBIC)
- 
-        # Display the resulting frame
-        # cv2.imshow('Frame', frame)
-        if(mode == "--production"):
-            result = pipeline(frame, mtx, dist)
-            out.write(result)
-            # cv2.imshow('Frame', result)
-        elif(mode == "--debugging"):
-            result = get_debug_images(frame, mtx, dist)
-            
-            # cv2.imshow('Frame', result)
-            
-            cv2.imwrite('output_images/dump/{}.jpg'.format(index), result)
-            new_result = cv2.imread('output_images/dump/{}.jpg'.format(index))
-            #cv2.imshow('Frame', new_result)
-            out.write(new_result)
-            index +=1
-        else:
-            break
-
-        # define q as the exit button
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-    else:
-        break
-
-# release the video capture object
-cap.release()
-out.release()
-# Closes all the windows currently opened.
-cv2.destroyAllWindows()
+if(mode == "--production" and kind == "--yolo"):
+    out_clip = project_video.fl_image(detect_cars_yolo) 
+    out_clip.write_videofile(project_video_output, audio=False)
+elif(mode == "--production" and kind == "--lanes"):
+    out_clip = project_video.fl_image(detect_lanes) 
+    out_clip.write_videofile(project_video_output, audio=False)
+elif(mode == "--production"):
+    out_clip = project_video.fl_image(full_perception) 
+    out_clip.write_videofile(project_video_output, audio=False)
+elif(mode == "--debugging"):
+    out_clip = project_video.fl_image(get_debug_image)
+    out_clip.write_videofile(project_video_output, audio=False)
 
 print("done")
