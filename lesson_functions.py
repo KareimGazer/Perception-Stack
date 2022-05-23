@@ -151,7 +151,7 @@ def draw_boxes(img, bboxes, color=(0, 0, 255), thick=6):
 
 def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, cell_per_block, move_pix):
     
-    draw_img = np.copy(img)
+    # draw_img = np.copy(img)
     img = img.astype('f4')/255
     box_list = []
     
@@ -208,10 +208,10 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, ce
                 xbox_left = int(xleft*scale)
                 ytop_draw = int(ytop*scale)
                 win_draw = int(window*scale)
-                cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),(0,0,255),6) 
+                # cv2.rectangle(draw_img,(xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart),(0,0,255),6) 
                 box_list.append(((xbox_left, ytop_draw+ystart),(xbox_left+win_draw,ytop_draw+win_draw+ystart)))
                 
-    return draw_img, box_list
+    return box_list
 
 def add_heat(heatmap, bbox_list):
     # Iterate through list of bboxes
