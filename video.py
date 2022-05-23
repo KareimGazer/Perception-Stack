@@ -136,7 +136,7 @@ def detect_cars_yolo(frame):
                 confidences.append(float(confidence))
                 classIDs.append(classID)
     
-    idxs = cv2.dnn.NMSBoxes(boxes, confidences, 0.8, 0.8)
+    idxs = cv2.dnn.NMSBoxes(boxes, confidences, 0.8, 0.6)
     if not len(idxs):
         return frame
     for i in idxs.flatten():
@@ -191,6 +191,34 @@ def detect_cars_hog(image):
     
     return draw_img
 
+def debug_image_hog(frame):
+    threshold = 5
+    global heat_history, move_pix, ystart, ystop, scale, svc 
+    global frames_to_remember, X_scaler, orient, pix_per_cell, cell_per_block
+    
+    boxes_image, box_list = find_cars_boxes(frame, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, cell_per_block, move_pix)
+    
+    heat = np.zeros_like(frame[:,:,0]).astype(float)
+    heat = add_heat(heat, box_list)
+    heat = apply_threshold(heat, threshold)
+    
+    heatmap = np.clip(heat, 0, 255)
+    labels = label(heatmap)
+    
+    draw_img = draw_labeled_bboxes(np.copy(frame), labels)
+    
+    frame = cv2.resize(frame, (0, 0), None, .5, .5)
+    boxes_image = cv2.resize(boxes_image, (0, 0), None, .5, .5)
+    
+    heatmap = np.dstack((heatmap, heatmap, heatmap))
+    heatmap = cv2.resize(heatmap, (0, 0), None, .5, .5)
+    draw_img = cv2.resize(draw_img, (0, 0), None, .5, .5)
+    
+    numpy_horz1 = np.hstack((frame, boxes_image)) # x * 2
+    numpy_horz2 = np.hstack((heatmap*255, draw_img))
+    numpy_ver = np.vstack((numpy_horz1, numpy_horz2))
+    return numpy_ver
+
 
 project_video_path = sys.argv[1]
 project_video_output = sys.argv[2]
@@ -214,7 +242,10 @@ elif(mode == "--production" and kind == "--lanes"):
 elif(mode == "--production"):
     out_clip = project_video.fl_image(full_perception) 
     out_clip.write_videofile(project_video_output, audio=False)
-elif(mode == "--debugging"):
+elif(mode == "--debugging" and kind == "--hog"):
+    out_clip = project_video.fl_image(debug_image_hog)
+    out_clip.write_videofile(project_video_output, audio=False)
+elif(mode == "--debugging" and kind == "--lanes"):
     out_clip = project_video.fl_image(get_debug_image)
     out_clip.write_videofile(project_video_output, audio=False)
 
