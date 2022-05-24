@@ -6,6 +6,9 @@ from scipy.ndimage.measurements import label
 import cv2
 import pickle
 
+"""
+converts the image to the specified color channel
+"""
 def convert_color(img, conv='RGB2YCrCb'):
     if conv == 'RGB2YCrCb':
         return cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
@@ -14,7 +17,8 @@ def convert_color(img, conv='RGB2YCrCb'):
     if conv == 'RGB2LUV':
         return cv2.cvtColor(img, cv2.COLOR_RGB2LUV)
 
-# Define a function to return HOG features and visualization
+    
+# returns HOG features and visualization
 def get_hog_features(img, orient, pix_per_cell, cell_per_block, 
                         vis=False, feature_vec=True):
     # Call with two outputs if vis==True
@@ -36,14 +40,15 @@ def get_hog_features(img, orient, pix_per_cell, cell_per_block,
                        visualize=vis, feature_vector=feature_vec)
         return features
 
-# Define a function to compute binned color features  
+# Define a function to compute binned color features
+# as a flattened scaled image
 def bin_spatial(img, size=(32, 32)):
     # Use cv2.resize().ravel() to create the feature vector
     features = cv2.resize(img, size).ravel() 
     # Return the feature vector
     return features
 
-# Define a function to compute color histogram features 
+# compute color histogram features for each channel then all of them are concatenated
 # NEED TO CHANGE bins_range if reading .png files with mpimg!
 def color_hist(img, nbins=32, bins_range=(0, 256)):
     # Compute the histogram of the color channels separately
@@ -55,8 +60,9 @@ def color_hist(img, nbins=32, bins_range=(0, 256)):
     # Return the individual histograms, bin_centers and feature vector
     return hist_features
 
-# Define a function to extract features from a list of images
-# Have this function call bin_spatial() and color_hist()
+# extracts features from a list of images
+# this function calls bin_spatial() and color_hist()
+# this function is used as part of the training code
 def extract_features(imgs, cspace='RGB', orient=9, pix_per_cell=8, cell_per_block=2, hog_channel=0):
     # Create a list to append feature vectors to
     features = []
@@ -93,7 +99,7 @@ def extract_features(imgs, cspace='RGB', orient=9, pix_per_cell=8, cell_per_bloc
     # Return list of feature vectors
     return features
     
-# Define a function that takes an image,
+# takes an image,
 # start and stop positions in both x and y, 
 # window size (x and y dimensions),  
 # and overlap fraction (for both x and y)
@@ -121,10 +127,7 @@ def slide_window(img, x_start_stop=[None, None], y_start_stop=[None, None],
     ny_windows = np.int((yspan-ny_buffer)/ny_pix_per_step) 
     # Initialize a list to append window positions to
     window_list = []
-    # Loop through finding x and y window positions
-    # Note: you could vectorize this step, but in practice
-    # you'll be considering windows one by one with your
-    # classifier, so looping makes sense
+    
     for ys in range(ny_windows):
         for xs in range(nx_windows):
             # Calculate window position
@@ -149,6 +152,11 @@ def draw_boxes(img, bboxes, color=(0, 0, 255), thick=6):
     # Return the image copy with boxes drawn
     return imcopy
 
+
+"""
+returns boxes (windows) with positive detection
+by implementing the sliding window algorithm
+"""
 def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, cell_per_block, move_pix):
     
     # draw_img = np.copy(img)
@@ -213,6 +221,10 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, ce
                 
     return box_list
 
+
+"""
+Adds heat to the heat map where a box (window) is found
+"""
 def add_heat(heatmap, bbox_list):
     # Iterate through list of bboxes
     for box in bbox_list:
@@ -222,13 +234,21 @@ def add_heat(heatmap, bbox_list):
 
     # Return updated heatmap
     return heatmap# Iterate through list of bboxes
-    
+
+
+"""
+thresholding for the heat map
+"""
 def apply_threshold(heatmap, threshold):
     # Zero out pixels below the threshold
     heatmap[heatmap <= threshold] = 0
     # Return thresholded map
     return heatmap
 
+
+"""
+returns the found boxes and drawn image
+"""
 def draw_labeled_bboxes(img, labels):
     # Iterate through all detected cars
     for car_number in range(1, labels[1]+1):
@@ -244,6 +264,9 @@ def draw_labeled_bboxes(img, labels):
     # Return the image
     return img
 
+"""
+debugging version on find_cars, as it returns both the boxes and the image with the boxes drawn
+"""
 def find_cars_boxes(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, cell_per_block, move_pix):
     
     draw_img = np.copy(img)
