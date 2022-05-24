@@ -29,6 +29,9 @@ pip install -U scikit-learn
 ```
 pip install -U scikit-image
 ```
+```
+pip install pickle4
+```
 ---
 ### Get Started
 #### 1. Make Sure to Download All Dependencies
