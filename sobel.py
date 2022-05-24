@@ -90,8 +90,10 @@ def dir_threshold(img, sobel_kernel=3, thresh=(0, np.pi/2)):
     binary_output[(arc_tan >= thresh_min) & (arc_tan <= thresh_max)] = 1
     return binary_output
 
+
 """
-combines both sobel gradients on RGB images and color threshold on s channel in HLS image
+the L channel in HLS is used for right lane detection, while B channel in LAB, S channel in HLS
+are used to detect the left lane.
 """
 def get_binary(frame, ksize):
     LAB = cv2.cvtColor(frame, cv2.COLOR_RGB2LAB)
