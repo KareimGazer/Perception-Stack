@@ -6,6 +6,8 @@
 ## Installation
 
 ### Dependencies
+**"yolov3.weights" file should be added in "model_data" folder**
+
 ```
 pip3 install numpy
 ```
