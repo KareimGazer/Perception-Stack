@@ -6,11 +6,10 @@ import lanes
 import rad
 import sobel
 import sys
+
 from moviepy.editor import VideoFileClip
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
-import numpy as np
-import cv2
 
 from sklearn.svm import LinearSVC
 from sklearn.preprocessing import StandardScaler
@@ -27,6 +26,7 @@ prev_out_img, prev_left_fitx, prev_right_fitx, prev_ploty = (None, None, None, N
 weights_path = 'model_data/yolov3.weights'
 confg_path = 'model_data/yolov3.cfg'
 labels_path = 'model_data/coco.names'
+
 labels = open(labels_path).read().strip().split('\n')
 net = cv2.dnn.readNetFromDarknet(confg_path, weights_path)
 out_layer_name = net.getUnconnectedOutLayersNames()
@@ -46,6 +46,9 @@ move_pix = 1 #  4 cells_per_step in the lesson
 frames_to_remember = 2
 
 
+"""
+production lane code
+"""
 def detect_lanes(frame):
     global prev_out_img, prev_left_fitx, prev_right_fitx, prev_ploty, mtx, dist, ksize
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
@@ -78,7 +81,7 @@ def detect_lanes(frame):
 
 
 """
-returns group of images each represents a step in the pipeline
+returns group of images each represents a step in the pipeline of lanes
 """
 def debug_pipeline(frame, mtx, dist):
     global prev_out_img, prev_left_fitx, prev_right_fitx, prev_ploty
@@ -106,7 +109,7 @@ def debug_pipeline(frame, mtx, dist):
 
 
 """
-resizes the debug pipeline images so it can fit into a single frame
+resizes the debug pipeline for lane images so it can fit into a single frame
 """
 def get_debug_image(frame):
     global mtx, dist
@@ -130,6 +133,9 @@ def get_debug_image(frame):
     return numpy_ver
 
 
+"""
+runs yolo car detection on each frame
+"""
 def detect_cars_yolo(frame):
     blob = cv2.dnn.blobFromImage(frame, 1/255.0, (256, 256), crop=False, swapRB=False) # check RB, 1/255.0
     net.setInput(blob)
@@ -162,12 +168,18 @@ def detect_cars_yolo(frame):
     return frame
 
 
+"""
+combines lane detection and car detection
+"""
 def full_perception(frame):
     lanes_detected = detect_lanes(frame)
     cars_detected = detect_cars_yolo(lanes_detected)
     return cars_detected
 
 
+"""
+processes the image to run HOG + SVM
+"""
 def detect_cars_hog(image):
     threshold = 5
     global heat_history, move_pix, ystart, ystop, scale, svc 
@@ -188,6 +200,10 @@ def detect_cars_hog(image):
     
     return draw_img
 
+
+"""
+formats the frame after running the hog pipline
+"""
 def debug_image_hog(frame):
     threshold = 5
     global heat_history, move_pix, ystart, ystop, scale, svc 
@@ -217,6 +233,7 @@ def debug_image_hog(frame):
     return numpy_ver
 
 
+# getting arguments from the command line
 project_video_path = sys.argv[1]
 project_video_output = sys.argv[2]
 mode = sys.argv[3]
@@ -225,6 +242,8 @@ if (len(sys.argv) > 4):
     kind = sys.argv[4]
 
 project_video = VideoFileClip(project_video_path)
+
+# for debugging
 print("Mode: ", mode, "  type: ", kind)
 
 if(mode == "--production" and kind == "--yolo"):
