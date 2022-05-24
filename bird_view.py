@@ -2,6 +2,9 @@ import numpy as np
 import cv2
 
 # pass matplot image
+"""
+returns the transformed image and the transformation matrix
+"""
 def get_bird_view(image):
     width, height = (image.shape[1], image.shape[0])
     offset = 300
