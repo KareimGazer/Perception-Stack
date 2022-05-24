@@ -11,6 +11,10 @@ from sklearn.model_selection import train_test_split
 import random
 from skimage.feature import hog
 
+"""
+The following four functions were used to augment the data set but were not used
+as performance did not increase much.
+"""
 
 def translate_image(image, pos_range=2):
     """Perturbs the image by translating the image by - pos_range to + pos_range pixels"""
@@ -58,6 +62,7 @@ def transform_image(image, pos_range = 2, rot_range = 2, scale = [1, 1.1], affin
 
     return image
 
+
 def convert_color(img, conv='RGB2YCrCb'):
     """
     Convert the image from one color space to the other
@@ -78,6 +83,7 @@ def convert_color(img, conv='RGB2YCrCb'):
         return cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
 
 
+
 def get_hog_features(img, orient, pix_per_cell, cell_per_block, 
                         vis=False, feature_vec=True):
     """
@@ -94,13 +100,20 @@ def get_hog_features(img, orient, pix_per_cell, cell_per_block,
                        cells_per_block=(cell_per_block, cell_per_block), transform_sqrt=True, 
                        visualize=vis, feature_vector=feature_vec)
         return features
-    
+ 
+"""
+returns small scaled flattned image as a feature
+"""
 def bin_spatial(img, size=(16, 16)):
     color1 = cv2.resize(img[:,:,0], size).ravel()
     color2 = cv2.resize(img[:,:,1], size).ravel()
     color3 = cv2.resize(img[:,:,2], size).ravel()
     return np.hstack((color1, color2, color3))
 
+
+"""
+returns a histogram of each color channel concatendated together
+"""
 def color_hist(img, nbins=32, bins_range=(0, 256)):
     # Compute the histogram of the color channels separately
     channel1_hist = np.histogram(img[:,:,0], bins=nbins, range=bins_range)
@@ -111,8 +124,8 @@ def color_hist(img, nbins=32, bins_range=(0, 256)):
     # Return the individual histograms, bin_centers and feature vector
     return hist_features
 
-# Define a function to extract features from a list of images
-# Have this function call bin_spatial() and color_hist()
+# Extracts features from a list of images
+# This function calls bin_spatial() and color_hist()
 def extract_features(imgs, cspace='RGB', spatial_size=(32, 32),
                         hist_bins=32, orient=9, 
                         pix_per_cell=8, cell_per_block=2, hog_channel='ALL',
@@ -161,6 +174,11 @@ def extract_features(imgs, cspace='RGB', spatial_size=(32, 32),
     # Return list of feature vectors
     return features
 
+
+"""
+returns boxes (windows) with positive detection
+by implementing the sliding window algorithm
+"""
 def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins, vis_bboxes = False):
     
     draw_img = np.copy(img)
@@ -229,6 +247,9 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, ce
                               
     return rectangles
 
+"""
+defines multiple scales of the window size and calls find_cars to get those windows
+"""
 def get_rectangles(image, scales = [1, 1.5, 2, 2.5, 3], 
                    ystarts = [400, 400, 450, 450, 460], 
                    ystops = [528, 550, 620, 650, 700]):
@@ -242,6 +263,10 @@ def get_rectangles(image, scales = [1, 1.5, 2, 2.5, 3],
     out_rectangles = [item for sublist in out_rectangles for item in sublist] 
     return out_rectangles
 
+
+"""
+Adds heat to the heat map where a box (window) is found
+"""
 def add_heat(heatmap, bbox_list):
     # Iterate through list of bboxes
     for box in bbox_list:
@@ -252,12 +277,20 @@ def add_heat(heatmap, bbox_list):
     # Return updated heatmap
     return heatmap
 
+
+"""
+thresholding for the heat map
+"""
 def apply_threshold(heatmap, threshold):
     # Zero out pixels below the threshold
     heatmap[heatmap <= threshold] = 0
     # Return thresholded map
     return heatmap
 
+
+"""
+returns the found boxes and drawn image
+"""
 def draw_labeled_bboxes(img, labels):
     # Iterate through all detected cars
     img_copy = np.copy(img)
@@ -278,6 +311,10 @@ def draw_labeled_bboxes(img, labels):
     # Return the image
     return result_rectangles, img_copy
 
+
+"""
+draws boxes on the given image
+"""
 def draw_boxes(img, bboxes, color=(0, 0, 255), thick=6):
     # Make a copy of the image
     imcopy = np.copy(img)
@@ -292,6 +329,10 @@ def draw_boxes(img, bboxes, color=(0, 0, 255), thick=6):
     # Return the image copy with boxes drawn
     return imcopy
 
+
+"""
+draws boxes on the given image and plots the image
+"""
 def visualize_bboxes(image, scales = [1, 1.5, 2, 2.5, 3], 
                    ystarts = [400, 400, 450, 450, 460], 
                    ystops = [528, 550, 620, 650, 700]):
