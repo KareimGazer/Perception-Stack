@@ -2,6 +2,18 @@
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 ![Lanes Image](./examples/example_output.jpg)
 
+### Get Started
+#### 1. Make Sure to Download All Dependencies
+#### 2. Download The Repo
+#### 3. Run any of the following commands in the commmand line: 
+- full production video `./run.sh <input_file_path> <output_file_path> --production`
+![AnimationGeneral](https://user-images.githubusercontent.com/49312818/170526459-cb87d8b5-5443-452b-b155-368ae9496757.gif)
+
+- production video for the lane detection `./run.sh <input_file_path> <output_file_path> --production --lanes`
+- production video for car detection with yolo `./run.sh <input_file_path> <output_file_path> --production --yolo`
+- production video for car detection with HOG + SVM `./run.sh <input_file_path> <output_file_path> --production --hog`
+- debugging video for lane detection `./run.sh <input_file_path> <output_file_path> --debugging --lanes`
+- debugging video for HOG + SVM `./run.sh <input_file_path> <output_file_path> --debugging --hog`
 
 ## Installation
 
@@ -33,16 +45,6 @@ pip install -U scikit-image
 pip install pickle4
 ```
 ---
-### Get Started
-#### 1. Make Sure to Download All Dependencies
-#### 2. Download The Repo
-#### 3. Run any of the following commands in the commmand line: 
-- full production video `./run.sh <input_file_path> <output_file_path> --production`
-- production video for the lane detection `./run.sh <input_file_path> <output_file_path> --production --lanes`
-- production video for car detection with yolo `./run.sh <input_file_path> <output_file_path> --production --yolo`
-- production video for car detection with HOG + SVM `./run.sh <input_file_path> <output_file_path> --production --hog`
-- debugging video for lane detection `./run.sh <input_file_path> <output_file_path> --debugging --lanes`
-- debugging video for HOG + SVM `./run.sh <input_file_path> <output_file_path> --debugging --hog`
 
 ## Methodology
 
